@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>p5.js SVG Export Example</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      font-family: system-ui, sans-serif;
+    }
+    .canvas-container {
+      border: 1px solid #ccc;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 500px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      max-width: 450px;
+      overflow: auto;
+      font-size: 11px;
+      max-height: 300px;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas-container">
+    <div id="sketch-holder"></div>
+  </div>
+  
+  <div class="controls">
+    <h2>p5.js SVG Export</h2>
+    <button id="save-svg">Save SVG</button>
+    <button id="show-svg">Show SVG</button>
+    <button id="show-paths">Show Paths Only</button>
+    
+    <h3>Output:</h3>
+    <pre id="svg-output">Click "Show SVG" to see output</pre>
+  </div>
+
+  <script type="module">
+    import p5 from 'https://cdn.jsdelivr.net/npm/p5@2.0.0/+esm';
+    import p5SVG from '../dist/p5.svg.esm.js';
+
+    p5.registerAddon(p5SVG);
+
+    const sketch = (p) => {
+      let img;
+      
+      p.preload = () => {
+        img = p.loadImage('https://picsum.photos/100/100');
+      };
+
+      p.setup = () => {
+        p.createCanvas(500, 400);
+        p.noLoop();
+      };
+
+      p.draw = () => {
+        p.background(255);
+        
+        p.stroke(0);
+        p.strokeWeight(2);
+        p.noFill();
+        p.rect(50, 50, 100, 100);
+        
+        p.ellipse(250, 100, 80, 60);
+        
+        p.stroke('red');
+        p.line(50, 200, 150, 250);
+        
+        p.beginShape();
+        p.vertex(200, 200);
+        p.vertex(250, 280);
+        p.vertex(300, 220);
+        p.endShape(p.CLOSE);
+        
+        p.push();
+        p.translate(50, 300);
+        p.rotate(p.radians(15));
+        p.fill('blue');
+        p.noStroke();
+        p.rect(0, 0, 80, 50);
+        p.pop();
+        
+        p.fill('black');
+        p.noStroke();
+        p.textSize(20);
+        p.text('Hello SVG!', 300, 320);
+        
+        p.textSize(16);
+        p.stroke('darkgreen');
+        p.strokeWeight(1);
+        p.fill('darkgreen');
+        p.text('Stroked text', 300, 350);
+        
+        p.push();
+        p.translate(400, 50);
+        p.image(img, 0, 0, 50, 50);
+        p.pop();
+        
+        p.stroke('purple');
+        p.strokeWeight(3);
+        p.noFill();
+        p.beginShape();
+        p.vertex(20, 380);
+        p.bezierVertex(50, 350, 80, 380, 100, 370);
+        p.endShape();
+        
+        p.fill('orange');
+        p.noStroke();
+        p.beginShape();
+        p.vertex(420, 350);
+        p.quad(430, 360, 460, 380, 440, 390);
+        p.endShape(p.CLOSE);
+      };
+    };
+
+    new p5(sketch, 'sketch-holder');
+
+    document.getElementById('save-svg').addEventListener('click', () => {
+      const p = window.p5Instance;
+      if (p && p.saveSVG) {
+        p.saveSVG('my-sketch.svg');
+      }
+    });
+
+    document.getElementById('show-svg').addEventListener('click', () => {
+      const p = window.p5Instance;
+      if (p && p.getSVG) {
+        document.getElementById('svg-output').textContent = p.getSVG();
+      }
+    });
+
+    document.getElementById('show-paths').addEventListener('click', () => {
+      const p = window.p5Instance;
+      if (p && p.getSVG) {
+        const svg = p.getSVG();
+        const paths = svg.match(/<path[^>]*>/g) || [];
+        document.getElementById('svg-output').textContent = paths.join('\n');
+      }
+    });
+  </script>
+</body>
+</html>
