@@ -58,12 +58,6 @@
     p5.registerAddon(p5SVG);
 
     const sketch = (p) => {
-      let img;
-      
-      p.preload = () => {
-        img = p.loadImage('https://picsum.photos/100/100');
-      };
-
       p.setup = () => {
         p.createCanvas(500, 400);
         p.noLoop();
@@ -106,11 +100,6 @@
         p.strokeWeight(1);
         p.fill('darkgreen');
         p.text('Stroked text', 300, 350);
-        
-        p.push();
-        p.translate(400, 50);
-        p.image(img, 0, 0, 50, 50);
-        p.pop();
         
         p.stroke('purple');
         p.strokeWeight(3);
