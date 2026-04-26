@@ -21,6 +21,7 @@
   },
   "workspaces": [
     "templates/*",
-    "templates/svg-export"
+    "templates/svg-export",
+    "templates/svg-import"
   ]
 }
