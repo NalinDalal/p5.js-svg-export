@@ -1,9 +1,13 @@
 # p5.js Addon Templates
 
-This project provides a number of templates for starting your own p5.js addon for extending the functionaliteis of p5.js.
+This project provides templates for starting your own p5.js addon for extending the functionalities of p5.js.
 
-## Usage
-To use one of the templates, run `npm create p5.js-addon` then follow the provided prompts.
+## Templates Included
+- **svg-export** - SVG export addon (`saveSVG()`, `getSVG()`)
+- **svg-import** - SVG import addon (`loadSVG()`, `parseSVG()`, `drawSVG()`)
+
+## Usage (for template development)
+To use one of the templates for your own addon, run `npm create p5.js-addon` then follow the provided prompts.
 
 You should replace the various references to the addon name within this project to the name of your addon:
 
@@ -43,3 +47,9 @@ Functions:
 - `drawSVG(shapes)` - Draw loaded shapes to canvas
 - `svgToPaths(svgString)` - Convert SVG to path data
 **Supported elements
+
+
+- Polish the add-on structure using npm create p5.js-addon (just boilerplate cleanup)
+- Actually use it; make some sketches, try plotter-style exports, try importing SVGs and manipulating them; discover pain points, API gaps, what works well
+- Break things intentionally — find edge cases, weird SVG attributes, things that don't map cleanly to p5.js primitives
+- Report back on the issue with what you found
