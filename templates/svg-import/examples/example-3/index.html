@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Example 3: Query &amp; Modify Shapes</title>
+  <style>
+    body { margin: 0; display: flex; gap: 20px; padding: 20px; font-family: system-ui, sans-serif; background: #f5f5f5; }
+    .info { max-width: 320px; }
+    h2 { margin-top: 0; }
+    canvas { border: 1px solid #ccc; background: white; }
+    .shape-list { font-size: 13px; }
+    .shape-list li { margin: 3px 0; }
+    .shape-list .id { font-weight: bold; color: #2C3E50; }
+    .shape-list .type { color: #7F8C8D; }
+  </style>
+</head>
+<body>
+  <div id="sketch-holder"></div>
+  <div class="info">
+    <h2>Query &amp; Modify Shapes</h2>
+    <p>Loads <code>house.svg</code>, finds shapes by <code>id</code>, then modifies their styles before drawing.</p>
+    <h3>Shapes found:</h3>
+    <ul id="shape-list" class="shape-list"></ul>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/p5@2.0.0/lib/p5.min.js"></script>
+  <script type="module">
+    import p5SVGImport from '../../dist/p5.svg-import.esm.js';
+    p5.registerAddon(p5SVGImport);
+
+    let svgShapes = [];
+
+    const sketch = (p) => {
+      p.setup = () => {
+        p.createCanvas(500, 350);
+        p.noLoop();
+
+        p.loadSVG('house.svg').then(shapes => {
+          // List all shapes in the sidebar
+          const ul = document.getElementById('shape-list');
+          shapes.forEach(s => {
+            const li = document.createElement('li');
+            const label = s.id ? `<span class="id">#${s.id}</span>` : '(no id)';
+            li.innerHTML = `<span class="type">${s.type}</span> ${label}`;
+            ul.appendChild(li);
+          });
+
+          // Modify some shapes by id
+          const roof = shapes.find(s => s.id === 'roof');
+          if (roof) roof.style.fill = '#8E44AD'; // purple roof
+
+          const door = shapes.find(s => s.id === 'door');
+          if (door) { door.style.fill = '#2C3E50'; door.style.stroke = '#1A252F'; }
+
+          const sun = shapes.find(s => s.id === 'sun');
+          if (sun) sun.style.fill = '#FF6B6B'; // red sun
+
+          svgShapes = shapes;
+          p.redraw();
+        });
+      };
+
+      p.draw = () => {
+        p.background(245);
+        if (svgShapes.length) p.drawSVG(svgShapes);
+      };
+    };
+
+    new p5(sketch, 'sketch-holder');
+  </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>p5.js SVG Import Example</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      font-family: system-ui, sans-serif;
+      background: #f5f5f5;
+    }
+    .canvas-container {
+      border: 1px solid #ccc;
+      background: white;
+    }
+    .info {
+      max-width: 350px;
+    }
+    h2 { margin-top: 0; }
+    .status {
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    .status.loading { background: #FFF3CD; color: #856404; }
+    .status.success { background: #D4EDDA; color: #155724; }
+    .status.error { background: #F8D7DA; color: #721C24; }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      font-size: 11px;
+      max-height: 200px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas-container">
+    <div id="sketch-holder"></div>
+  </div>
+
+  <div class="info">
+    <h2>SVG Import Test</h2>
+    <div id="status" class="status loading">Loading SVG...</div>
+    <p>This example loads <code>test.svg</code> and draws it on the canvas using <code>loadSVG()</code> + <code>drawSVG()</code>.</p>
+    <h3>Shapes in test.svg:</h3>
+    <ul>
+      <li>rect (sharp + rounded)</li>
+      <li>circle</li>
+      <li>ellipse</li>
+      <li>line</li>
+      <li>polyline</li>
+      <li>polygon</li>
+      <li>path (rect, triangle, curve)</li>
+      <li>g (transformed group)</li>
+    </ul>
+    <h3>Raw SVG:</h3>
+    <pre id="svg-source">Loading...</pre>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/p5@2.0.0/lib/p5.min.js"></script>
+  <script type="module">
+    import p5SVGImport from '../../dist/p5.svg-import.esm.js?v=2';
+    p5.registerAddon(p5SVGImport);
+
+    let svgShapes = null;
+    let loadError = null;
+
+    const sketch = (p) => {
+      p.setup = () => {
+        p.createCanvas(400, 400);
+        p.background(255);
+        p.noLoop();
+
+        p.loadSVG('test.svg')
+          .then(shapes => {
+            svgShapes = shapes;
+            document.getElementById('status').className = 'status success';
+            document.getElementById('status').textContent = `Loaded ${shapes.length} shapes`;
+            p.redraw();
+          })
+          .catch(err => {
+            loadError = err;
+            document.getElementById('status').className = 'status error';
+            document.getElementById('status').textContent = `Error: ${err.message}`;
+            console.error('loadSVG failed:', err);
+          });
+      };
+
+      p.draw = () => {
+        p.background(255);
+
+        if (svgShapes) {
+          p.drawSVG(svgShapes);
+        }
+
+        if (loadError) {
+          p.fill(200, 0, 0);
+          p.noStroke();
+          p.textSize(14);
+          p.text('Failed to load SVG', 20, 20);
+        }
+      };
+    };
+
+    new p5(sketch, 'sketch-holder');
+
+    fetch('test.svg')
+      .then(r => r.text())
+      .then(svg => {
+        document.getElementById('svg-source').textContent = svg;
+      });
+  </script>
+</body>
+</html>

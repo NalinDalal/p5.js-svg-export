@@ -355,13 +355,10 @@ function p5SVG(p5, fn, lifecycles) {
     if (ctx) {
       wrappedContext = wrapContext(ctx);
     }
+    isRecording = true;
   };
 
   lifecycles.postdraw = function() {
-    if (!isRecording) {
-      isRecording = true;
-    }
-    
     paths = [];
     texts = [];
     images = [];

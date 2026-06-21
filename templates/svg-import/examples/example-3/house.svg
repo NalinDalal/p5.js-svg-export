@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <!-- Background frame -->
+  <rect x="10" y="10" width="280" height="280" rx="10" ry="10" fill="none" stroke="#BDC3C7" stroke-width="2"/>
+
+  <!-- House body -->
+  <rect id="house" x="80" y="140" width="140" height="110" fill="#E67E22" stroke="#D35400" stroke-width="2"/>
+
+  <!-- Roof -->
+  <polygon id="roof" points="70,145 150,70 230,145" fill="#C0392B" stroke="#96281B" stroke-width="2"/>
+
+  <!-- Door -->
+  <rect id="door" x="130" y="190" width="40" height="60" fill="#8B4513" stroke="#5D2906" stroke-width="1"/>
+
+  <!-- Window left -->
+  <rect id="window-left" x="95" y="160" width="25" height="25" fill="#AED6F1" stroke="#5DADE2" stroke-width="1"/>
+
+  <!-- Window right -->
+  <rect id="window-right" x="180" y="160" width="25" height="25" fill="#AED6F1" stroke="#5DADE2" stroke-width="1"/>
+
+  <!-- Chimney -->
+  <rect id="chimney" x="185" y="85" width="20" height="60" fill="#7F8C8D" stroke="#566573" stroke-width="1"/>
+
+  <!-- Smoke -->
+  <path id="smoke" d="M 195 80 Q 200 60 190 50 Q 180 35 195 25" fill="none" stroke="#95A5A6" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Sun -->
+  <circle id="sun" cx="50" cy="50" r="25" fill="#F1C40F" stroke="#F39C12" stroke-width="2"/>
+
+  <!-- Sun rays -->
+  <g id="sun-rays">
+    <line x1="50" y1="15" x2="50" y2="5" stroke="#F1C40F" stroke-width="2"/>
+    <line x1="50" y1="85" x2="50" y2="95" stroke="#F1C40F" stroke-width="2"/>
+    <line x1="15" y1="50" x2="5" y2="50" stroke="#F1C40F" stroke-width="2"/>
+    <line x1="85" y1="50" x2="95" y2="50" stroke="#F1C40F" stroke-width="2"/>
+    <line x1="25" y1="25" x2="18" y2="18" stroke="#F1C40F" stroke-width="2"/>
+    <line x1="75" y1="25" x2="82" y2="18" stroke="#F1C40F" stroke-width="2"/>
+    <line x1="25" y1="75" x2="18" y2="82" stroke="#F1C40F" stroke-width="2"/>
+    <line x1="75" y1="75" x2="82" y2="82" stroke="#F1C40F" stroke-width="2"/>
+  </g>
+
+  <!-- Ground -->
+  <line x1="0" y1="250" x2="300" y2="250" stroke="#27AE60" stroke-width="3"/>
+</svg>
