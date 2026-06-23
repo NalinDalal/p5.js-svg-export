@@ -1,21 +1,11 @@
 import {
-  DEFAULT_STYLE,
-  IDENTITY_TRANSFORM,
   multiplyTransform,
   createTransform,
-  transformToSVGMatrix,
   colorToHex,
-  cloneStyle,
   createIRState,
   getCurrentTransform,
-  pushTransform,
-  popTransform,
   setTransform,
   addCommand,
-  createLineCmd,
-  createRectCmd,
-  createEllipseCmd,
-  createArcCmd,
   createPathCmd,
   createTextCmd,
   createImageCmd,
@@ -34,7 +24,6 @@ function p5SVG(p5, fn, lifecycles) {
   let currentFontSize = 12;
   let currentTextAlign = 'start';
   let currentTextBaseline = 'alphabetic';
-  let currentOpacity = 1;
 
   function syncStyleFromP5() {
     const states = p5._renderer?.states;
@@ -57,7 +46,6 @@ function p5SVG(p5, fn, lifecycles) {
       strokeWeight: currentStrokeWeight,
       strokeCap: currentStrokeCap,
       strokeJoin: currentStrokeJoin,
-      opacity: currentOpacity,
       font: currentFont,
       fontSize: currentFontSize,
       textAlign: currentTextAlign,

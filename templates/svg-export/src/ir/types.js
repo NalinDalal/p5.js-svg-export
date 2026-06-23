@@ -291,7 +291,7 @@ function styleToSVGAttrs(style) {
 }
 
 function textAnchorFromAlign(align) {
-    if (align === 'center' || align === 'center') return 'middle';
+    if (align === 'center') return 'middle';
     if (align === 'end' || align === 'right') return 'end';
     return 'start';
 }
@@ -351,10 +351,6 @@ function commandToSVG(cmd, width, height) {
 export function commandsToSVG(commands, width, height) {
     const elements = commands.map(cmd => commandToSVG(cmd, width, height)).join('\n');
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">\n${elements}\n</svg>`;
-}
-
-export function commandsToSVGString(commands, width, height) {
-    return commandsToSVG(commands, width, height);
 }
 
 
