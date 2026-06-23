@@ -118,26 +118,23 @@
       };
     };
 
-    new p5(sketch, 'sketch-holder');
+    const p5Instance = new p5(sketch, 'sketch-holder');
 
     document.getElementById('save-svg').addEventListener('click', () => {
-      const p = window.p5Instance;
-      if (p && p.saveSVG) {
-        p.saveSVG('my-sketch.svg');
+      if (p5Instance && p5Instance.saveSVG) {
+        p5Instance.saveSVG('my-sketch.svg');
       }
     });
 
     document.getElementById('show-svg').addEventListener('click', () => {
-      const p = window.p5Instance;
-      if (p && p.getSVG) {
-        document.getElementById('svg-output').textContent = p.getSVG();
+      if (p5Instance && p5Instance.getSVG) {
+        document.getElementById('svg-output').textContent = p5Instance.getSVG();
       }
     });
 
     document.getElementById('show-paths').addEventListener('click', () => {
-      const p = window.p5Instance;
-      if (p && p.getSVG) {
-        const svg = p.getSVG();
+      if (p5Instance && p5Instance.getSVG) {
+        const svg = p5Instance.getSVG();
         const paths = svg.match(/<path[^>]*>/g) || [];
         document.getElementById('svg-output').textContent = paths.join('\n');
       }
