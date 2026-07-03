@@ -89,62 +89,47 @@ function p5SVG(p5, fn, lifecycles) {
 
     ctx.moveTo = function (x, y) {
       if (ir && ir.recording) {
-        const t = getCurrentTransform(ir);
-        const px = t.a * x + t.c * y + t.e;
-        const py = t.b * x + t.d * y + t.f;
-        currentPath.push(`M ${Math.round(px * 1000) / 1000} ${Math.round(py * 1000) / 1000}`);
+        syncStyleFromP5();
+        currentPath.push(`M ${Math.round(x * 1000) / 1000} ${Math.round(y * 1000) / 1000}`);
       }
       return original.moveTo(x, y);
     };
 
     ctx.lineTo = function (x, y) {
       if (ir && ir.recording) {
-        const t = getCurrentTransform(ir);
-        const px = t.a * x + t.c * y + t.e;
-        const py = t.b * x + t.d * y + t.f;
-        currentPath.push(`L ${Math.round(px * 1000) / 1000} ${Math.round(py * 1000) / 1000}`);
+        syncStyleFromP5();
+        currentPath.push(`L ${Math.round(x * 1000) / 1000} ${Math.round(y * 1000) / 1000}`);
       }
       return original.lineTo(x, y);
     };
 
     ctx.bezierCurveTo = function (cp1x, cp1y, cp2x, cp2y, x, y) {
       if (ir && ir.recording) {
-        const t = getCurrentTransform(ir);
+        syncStyleFromP5();
         const r = (v) => Math.round(v * 1000) / 1000;
-        const tx = (x, y) => ({ x: t.a * x + t.c * y + t.e, y: t.b * x + t.d * y + t.f });
-        const p1 = tx(cp1x, cp1y);
-        const p2 = tx(cp2x, cp2y);
-        const p3 = tx(x, y);
-        currentPath.push(`C ${r(p1.x)} ${r(p1.y)}, ${r(p2.x)} ${r(p2.y)}, ${r(p3.x)} ${r(p3.y)}`);
+        currentPath.push(`C ${r(cp1x)} ${r(cp1y)}, ${r(cp2x)} ${r(cp2y)}, ${r(x)} ${r(y)}`);
       }
       return original.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
     };
 
     ctx.quadraticCurveTo = function (cpx, cpy, x, y) {
       if (ir && ir.recording) {
-        const t = getCurrentTransform(ir);
+        syncStyleFromP5();
         const r = (v) => Math.round(v * 1000) / 1000;
-        const tx = (x, y) => ({ x: t.a * x + t.c * y + t.e, y: t.b * x + t.d * y + t.f });
-        const p1 = tx(cpx, cpy);
-        const p2 = tx(x, y);
-        currentPath.push(`Q ${r(p1.x)} ${r(p1.y)}, ${r(p2.x)} ${r(p2.y)}`);
+        currentPath.push(`Q ${r(cpx)} ${r(cpy)}, ${r(x)} ${r(y)}`);
       }
       return original.quadraticCurveTo(cpx, cpy, x, y);
     };
 
     ctx.arc = function (x, y, radius, startAngle, endAngle, counterClockwise) {
       if (ir && ir.recording) {
-        const t = getCurrentTransform(ir);
+        syncStyleFromP5();
         const r = (v) => Math.round(v * 1000) / 1000;
-        const tx = (x, y) => ({ x: t.a * x + t.c * y + t.e, y: t.b * x + t.d * y + t.f });
 
         const startX = x + radius * Math.cos(startAngle);
         const startY = y + radius * Math.sin(startAngle);
         const endX = x + radius * Math.cos(endAngle);
         const endY = y + radius * Math.sin(endAngle);
-
-        const pStart = tx(startX, startY);
-        const pEnd = tx(endX, endY);
 
         let delta = endAngle - startAngle;
         if (counterClockwise) {
@@ -153,37 +138,32 @@ function p5SVG(p5, fn, lifecycles) {
 
         const largeArc = Math.abs(delta) > Math.PI ? 1 : 0;
         const sweep = counterClockwise ? 0 : 1;
-        currentPath.push(`M ${r(pStart.x)} ${r(pStart.y)} A ${r(radius)} ${r(radius)} 0 ${largeArc} ${sweep} ${r(pEnd.x)} ${r(pEnd.y)}`);
+        currentPath.push(`M ${r(startX)} ${r(startY)} A ${r(radius)} ${r(radius)} 0 ${largeArc} ${sweep} ${r(endX)} ${r(endY)}`);
       }
       return original.arc(x, y, radius, startAngle, endAngle, counterClockwise);
     };
 
     ctx.ellipse = function (x, y, radiusX, radiusY, startAngle, endAngle, counterClockwise) {
       if (ir && ir.recording) {
-        const t = getCurrentTransform(ir);
+        syncStyleFromP5();
         const r = (v) => Math.round(v * 1000) / 1000;
-        const tx = (x, y) => ({ x: t.a * x + t.c * y + t.e, y: t.b * x + t.d * y + t.f });
 
         const start = startAngle !== undefined ? startAngle : 0;
         const stop = endAngle !== undefined ? endAngle : 2 * Math.PI;
         const isFull = Math.abs(stop - start) >= 2 * Math.PI - 0.0001;
 
         if (isFull) {
-          const pCenter = tx(x, y);
-          currentPath.push(`M ${r(pCenter.x + radiusX)} ${r(pCenter.y)} A ${r(radiusX)} ${r(radiusY)} 0 1 1 ${r(pCenter.x + radiusX)} ${r(pCenter.y - 0.001)}`);
+          currentPath.push(`M ${r(x + radiusX)} ${r(y)} A ${r(radiusX)} ${r(radiusY)} 0 1 1 ${r(x + radiusX)} ${r(y - 0.001)}`);
         } else {
           const startX = x + radiusX * Math.cos(start);
           const startY = y + radiusY * Math.sin(start);
           const endX = x + radiusX * Math.cos(stop);
           const endY = y + radiusY * Math.sin(stop);
 
-          const pStart = tx(startX, startY);
-          const pEnd = tx(endX, endY);
-
           let delta = stop - start;
           const largeArc = Math.abs(delta) > Math.PI ? 1 : 0;
           const sweep = counterClockwise ? 0 : 1;
-          currentPath.push(`M ${r(pStart.x)} ${r(pStart.y)} A ${r(radiusX)} ${r(radiusY)} 0 ${largeArc} ${sweep} ${r(pEnd.x)} ${r(pEnd.y)}`);
+          currentPath.push(`M ${r(startX)} ${r(startY)} A ${r(radiusX)} ${r(radiusY)} 0 ${largeArc} ${sweep} ${r(endX)} ${r(endY)}`);
         }
       }
       return original.ellipse(x, y, radiusX, radiusY, startAngle, endAngle, counterClockwise);
@@ -191,14 +171,12 @@ function p5SVG(p5, fn, lifecycles) {
 
     ctx.rect = function (x, y, w, h, radii) {
       if (ir && ir.recording) {
-        const t = getCurrentTransform(ir);
+        syncStyleFromP5();
         const r = (v) => Math.round(v * 1000) / 1000;
-        const tx = (x, y) => ({ x: t.a * x + t.c * y + t.e, y: t.b * x + t.d * y + t.f });
-        const p = tx(x, y);
 
         if (radii && (radii.tl || radii.br)) {
           const rad = radii.tl || 0;
-          currentPath.push(`M ${r(p.x + rad)} ${r(p.y)}`);
+          currentPath.push(`M ${r(x + rad)} ${r(y)}`);
           currentPath.push(`h ${r(w - rad * 2)}`);
           if (rad > 0) currentPath.push(`a ${r(rad)} ${r(rad)} 0 0 1 ${r(rad)} ${r(rad)}`);
           currentPath.push(`v ${r(h - rad * 2)}`);
@@ -209,7 +187,7 @@ function p5SVG(p5, fn, lifecycles) {
           if (rad > 0) currentPath.push(`a ${r(rad)} ${r(rad)} 0 0 1 ${r(rad)} -${r(rad)}`);
           currentPath.push('z');
         } else {
-          currentPath.push(`M ${r(p.x)} ${r(p.y)} h ${r(w)} v ${r(h)} h -${r(w)} z`);
+          currentPath.push(`M ${r(x)} ${r(y)} h ${r(w)} v ${r(h)} h -${r(w)} z`);
         }
       }
       return original.rect(x, y, w, h, radii);
@@ -224,38 +202,35 @@ function p5SVG(p5, fn, lifecycles) {
 
     ctx.fillText = function (text, x, y) {
       if (ir && ir.recording) {
+        syncStyleFromP5();
         const t = getCurrentTransform(ir);
-        const px = t.a * x + t.c * y + t.e;
-        const py = t.b * x + t.d * y + t.f;
-        addCommand(ir, createTextCmd(text, Math.round(px * 1000) / 1000, Math.round(py * 1000) / 1000, currentStyle(), t));
+        addCommand(ir, createTextCmd(text, Math.round(x * 1000) / 1000, Math.round(y * 1000) / 1000, currentStyle(), t));
       }
       return original.fillText(text, x, y);
     };
 
     ctx.strokeText = function (text, x, y) {
       if (ir && ir.recording) {
+        syncStyleFromP5();
         const t = getCurrentTransform(ir);
-        const px = t.a * x + t.c * y + t.e;
-        const py = t.b * x + t.d * y + t.f;
         const style = { ...currentStyle(), fill: null };
-        addCommand(ir, createTextCmd(text, Math.round(px * 1000) / 1000, Math.round(py * 1000) / 1000, style, t));
+        addCommand(ir, createTextCmd(text, Math.round(x * 1000) / 1000, Math.round(y * 1000) / 1000, style, t));
       }
       return original.strokeText(text, x, y);
     };
 
     ctx.drawImage = function (image, dx, dy, dw, dh, sx, sy, sw, sh) {
       if (ir && ir.recording) {
+        syncStyleFromP5();
         let args = [dx, dy, dw, dh];
         if (sx !== undefined) {
           args = [sx, sy, sw, sh, dx, dy, dw, dh];
         }
         const t = getCurrentTransform(ir);
-        const px = t.a * args[0] + t.c * args[1] + t.e;
-        const py = t.b * args[0] + t.d * args[1] + t.f;
         addCommand(ir, createImageCmd(
           image.src || image.currentSrc || '',
-          Math.round(px * 1000) / 1000,
-          Math.round(py * 1000) / 1000,
+          Math.round(args[0] * 1000) / 1000,
+          Math.round(args[1] * 1000) / 1000,
           args[2], args[3],
           currentStyle(), t
         ));
@@ -310,6 +285,7 @@ function p5SVG(p5, fn, lifecycles) {
 
     ctx.beginPath = function () {
       if (ir && ir.recording) {
+        syncStyleFromP5();
         flushPath();
         startPath();
       }
@@ -318,6 +294,7 @@ function p5SVG(p5, fn, lifecycles) {
 
     ctx.fill = function (path) {
       if (ir && ir.recording) {
+        syncStyleFromP5();
         flushPath();
       }
       return original.fill(path);
@@ -325,6 +302,7 @@ function p5SVG(p5, fn, lifecycles) {
 
     ctx.stroke = function (path) {
       if (ir && ir.recording) {
+        syncStyleFromP5();
         flushPath();
       }
       return original.stroke(path);
@@ -347,9 +325,6 @@ function p5SVG(p5, fn, lifecycles) {
   };
 
   lifecycles.postdraw = function () {
-    if (ir) {
-      ir.commands = [];
-    }
     currentPath = [];
     syncStyleFromP5();
   };
@@ -377,7 +352,10 @@ function p5SVG(p5, fn, lifecycles) {
   };
 
   fn.startSVGRecord = function () {
-    if (ir) ir.recording = true;
+    if (ir) {
+      ir.commands = [];
+      ir.recording = true;
+    }
   };
 
   fn.stopSVGRecord = function () {
