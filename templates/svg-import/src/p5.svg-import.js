@@ -244,154 +244,166 @@ function p5SVGImport(p5, fn) {
     return { type, vertices, style, transform, id: null, className: null };
   }
 
-  function parseSVGElement(element, shapes) {
-    const tag = element.tagName.toLowerCase();
-    const transform = parseTransform(element.getAttribute('transform'));
-    const style = parseStyle(element.getAttribute('style'), element);
-
-    switch (tag) {
-      case 'path': {
-        const d = element.getAttribute('d');
-        if (d) {
-          const commands = parsePathData(d);
-          const vertices = pathToVertices(commands);
-          shapes.push(buildShapeData('path', vertices, style, transform));
-        }
-        break;
-      }
-      case 'rect': {
-        const rx = parseFloat(element.getAttribute('x')) || 0;
-        const ry = parseFloat(element.getAttribute('y')) || 0;
-        const w = parseFloat(element.getAttribute('width'));
-        const h = parseFloat(element.getAttribute('height'));
-        const crx = parseFloat(element.getAttribute('rx')) || 0;
-        const cry = parseFloat(element.getAttribute('ry')) || crx;
-        if (w && h) {
-          const r = Math.max(crx, cry);
-          const verts = [];
-          if (r > 0) {
-            verts.push(
-              { x: rx + r, y: ry, type: 'M' },
-              { x: rx + w - r, y: ry, type: 'L' },
-              { x: rx + w, y: ry + r, cp1: { x: rx + w - r, y: ry }, type: 'Q' },
-              { x: rx + w, y: ry + h - r, type: 'L' },
-              { x: rx + w - r, y: ry + h, cp1: { x: rx + w, y: ry + h - r }, type: 'Q' },
-              { x: rx + r, y: ry + h, type: 'L' },
-              { x: rx, y: ry + h - r, cp1: { x: rx + r, y: ry + h }, type: 'Q' },
-              { x: rx, y: ry + r, type: 'L' },
-              { x: rx + r, y: ry, cp1: { x: rx, y: ry + r }, type: 'Q' }
-            );
-          } else {
-            verts.push(
-              { x: rx, y: ry, type: 'M' },
-              { x: rx + w, y: ry, type: 'L' },
-              { x: rx + w, y: ry + h, type: 'L' },
-              { x: rx, y: ry + h, type: 'L' }
-            );
-          }
-          verts.push({ x: rx, y: ry, type: 'Z' });
-          shapes.push(buildShapeData('rect', verts, style, transform));
-        }
-        break;
-      }
-      case 'circle': {
-        const cx = parseFloat(element.getAttribute('cx')) || 0;
-        const cy = parseFloat(element.getAttribute('cy')) || 0;
-        const r = parseFloat(element.getAttribute('r'));
-        if (r) {
-          const verts = [];
-          const n = 32;
-          verts.push({ x: cx + r, y: cy, type: 'M' });
-          for (let i = 1; i <= n; i++) {
-            const ang = (i / n) * 2 * Math.PI;
-            verts.push({ x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang), type: 'L' });
-          }
-          verts.push({ x: cx + r, y: cy, type: 'Z' });
-          shapes.push(buildShapeData('circle', verts, style, transform));
-        }
-        break;
-      }
-      case 'ellipse': {
-        const cx = parseFloat(element.getAttribute('cx')) || 0;
-        const cy = parseFloat(element.getAttribute('cy')) || 0;
-        const erx = parseFloat(element.getAttribute('rx'));
-        const ery = parseFloat(element.getAttribute('ry'));
-        if (erx && ery) {
-          const verts = [];
-          const n = 32;
-          verts.push({ x: cx + erx, y: cy, type: 'M' });
-          for (let i = 1; i <= n; i++) {
-            const ang = (i / n) * 2 * Math.PI;
-            verts.push({ x: cx + erx * Math.cos(ang), y: cy + ery * Math.sin(ang), type: 'L' });
-          }
-          verts.push({ x: cx + erx, y: cy, type: 'Z' });
-          shapes.push(buildShapeData('ellipse', verts, style, transform));
-        }
-        break;
-      }
-      case 'line': {
-        const x1 = parseFloat(element.getAttribute('x1')) || 0;
-        const y1 = parseFloat(element.getAttribute('y1')) || 0;
-        const x2 = parseFloat(element.getAttribute('x2')) || 0;
-        const y2 = parseFloat(element.getAttribute('y2')) || 0;
-        shapes.push(buildShapeData('line', [
-          { x: x1, y: y1, type: 'M' },
-          { x: x2, y: y2, type: 'L' }
-        ], { ...style, fill: style.stroke }, transform));
-        break;
-      }
-      case 'polyline': {
-        const pts = element.getAttribute('points');
-        if (!pts) break;
-        const coords = pts.trim().split(/[\s,]+/).map(Number);
-        const verts = [];
-        for (let i = 0; i < coords.length; i += 2) {
-          verts.push({ x: coords[i], y: coords[i + 1], type: i === 0 ? 'M' : 'L' });
-        }
-        shapes.push(buildShapeData('polyline', verts, style, transform));
-        break;
-      }
-      case 'polygon': {
-        const pts = element.getAttribute('points');
-        if (!pts) break;
-        const coords = pts.trim().split(/[\s,]+/).map(Number);
-        const verts = [{ x: coords[0], y: coords[1], type: 'M' }];
-        for (let i = 2; i < coords.length; i += 2) {
-          verts.push({ x: coords[i], y: coords[i + 1], type: 'L' });
-        }
-        verts.push({ x: coords[0], y: coords[1], type: 'Z' });
-        shapes.push(buildShapeData('polygon', verts, style, transform));
-        break;
-      }
-      case 'text': {
-        const x = parseFloat(element.getAttribute('x')) || 0;
-        const y = parseFloat(element.getAttribute('y')) || 0;
-        shapes.push({
-          type: 'text',
-          text: element.textContent,
-          x, y, style, transform,
-          id: null, className: null
-        });
-        break;
-      }
-      case 'g':
-      case 'svg': {
-        for (const child of element.children) {
-          parseSVGElement(child, shapes);
-        }
-        break;
-      }
-    }
-
-    const id = element.getAttribute('id');
-    const cls = element.getAttribute('class');
-    const last = shapes[shapes.length - 1];
-    if (last) {
-      if (id) last.id = id;
-      if (cls) last.className = cls;
-    }
-    return shapes;
+  function multiplyTransform(m1, m2) {
+    return [
+      m1[0] * m2[0] + m1[2] * m2[1],
+      m1[1] * m2[0] + m1[3] * m2[1],
+      m1[0] * m2[2] + m1[2] * m2[3],
+      m1[1] * m2[2] + m1[3] * m2[3],
+      m1[0] * m2[4] + m1[2] * m2[5] + m1[4],
+      m1[1] * m2[4] + m1[3] * m2[5] + m1[5]
+    ];
   }
+
+  function parseSVGElement(element, shapes, parentTransform) {
+     const tag = element.tagName.toLowerCase();
+     const elementTransform = parseTransform(element.getAttribute('transform'));
+     const composedTransform = parentTransform ? multiplyTransform(parentTransform, elementTransform) : elementTransform;
+     const style = parseStyle(element.getAttribute('style'), element);
+
+     switch (tag) {
+       case 'path': {
+         const d = element.getAttribute('d');
+         if (d) {
+           const commands = parsePathData(d);
+           const vertices = pathToVertices(commands);
+           shapes.push(buildShapeData('path', vertices, style, composedTransform));
+         }
+         break;
+       }
+       case 'rect': {
+         const rx = parseFloat(element.getAttribute('x')) || 0;
+         const ry = parseFloat(element.getAttribute('y')) || 0;
+         const w = parseFloat(element.getAttribute('width'));
+         const h = parseFloat(element.getAttribute('height'));
+         const crx = parseFloat(element.getAttribute('rx')) || 0;
+         const cry = parseFloat(element.getAttribute('ry')) || crx;
+         if (w && h) {
+           const r = Math.max(crx, cry);
+           const verts = [];
+           if (r > 0) {
+             verts.push(
+               { x: rx + r, y: ry, type: 'M' },
+               { x: rx + w - r, y: ry, type: 'L' },
+               { x: rx + w, y: ry + r, cp1: { x: rx + w - r, y: ry }, type: 'Q' },
+               { x: rx + w, y: ry + h - r, type: 'L' },
+               { x: rx + w - r, y: ry + h, cp1: { x: rx + w, y: ry + h - r }, type: 'Q' },
+               { x: rx + r, y: ry + h, type: 'L' },
+               { x: rx, y: ry + h - r, cp1: { x: rx + r, y: ry + h }, type: 'Q' },
+               { x: rx, y: ry + r, type: 'L' },
+               { x: rx + r, y: ry, cp1: { x: rx, y: ry + r }, type: 'Q' }
+             );
+           } else {
+             verts.push(
+               { x: rx, y: ry, type: 'M' },
+               { x: rx + w, y: ry, type: 'L' },
+               { x: rx + w, y: ry + h, type: 'L' },
+               { x: rx, y: ry + h, type: 'L' }
+             );
+           }
+           verts.push({ x: rx, y: ry, type: 'Z' });
+           shapes.push(buildShapeData('rect', verts, style, composedTransform));
+         }
+         break;
+       }
+       case 'circle': {
+         const cx = parseFloat(element.getAttribute('cx')) || 0;
+         const cy = parseFloat(element.getAttribute('cy')) || 0;
+         const r = parseFloat(element.getAttribute('r'));
+         if (r) {
+           const verts = [];
+           const n = 32;
+           verts.push({ x: cx + r, y: cy, type: 'M' });
+           for (let i = 1; i <= n; i++) {
+             const ang = (i / n) * 2 * Math.PI;
+             verts.push({ x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang), type: 'L' });
+           }
+           verts.push({ x: cx + r, y: cy, type: 'Z' });
+           shapes.push(buildShapeData('circle', verts, style, composedTransform));
+         }
+         break;
+       }
+       case 'ellipse': {
+         const cx = parseFloat(element.getAttribute('cx')) || 0;
+         const cy = parseFloat(element.getAttribute('cy')) || 0;
+         const erx = parseFloat(element.getAttribute('rx'));
+         const ery = parseFloat(element.getAttribute('ry'));
+         if (erx && ery) {
+           const verts = [];
+           const n = 32;
+           verts.push({ x: cx + erx, y: cy, type: 'M' });
+           for (let i = 1; i <= n; i++) {
+             const ang = (i / n) * 2 * Math.PI;
+             verts.push({ x: cx + erx * Math.cos(ang), y: cy + ery * Math.sin(ang), type: 'L' });
+           }
+           verts.push({ x: cx + erx, y: cy, type: 'Z' });
+           shapes.push(buildShapeData('ellipse', verts, style, composedTransform));
+         }
+         break;
+       }
+       case 'line': {
+         const x1 = parseFloat(element.getAttribute('x1')) || 0;
+         const y1 = parseFloat(element.getAttribute('y1')) || 0;
+         const x2 = parseFloat(element.getAttribute('x2')) || 0;
+         const y2 = parseFloat(element.getAttribute('y2')) || 0;
+         shapes.push(buildShapeData('line', [
+           { x: x1, y: y1, type: 'M' },
+           { x: x2, y: y2, type: 'L' }
+         ], { ...style, fill: style.stroke }, composedTransform));
+         break;
+       }
+       case 'polyline': {
+         const pts = element.getAttribute('points');
+         if (!pts) break;
+         const coords = pts.trim().split(/[\s,]+/).map(Number);
+         const verts = [];
+         for (let i = 0; i < coords.length; i += 2) {
+           verts.push({ x: coords[i], y: coords[i + 1], type: i === 0 ? 'M' : 'L' });
+         }
+         shapes.push(buildShapeData('polyline', verts, style, composedTransform));
+         break;
+       }
+       case 'polygon': {
+         const pts = element.getAttribute('points');
+         if (!pts) break;
+         const coords = pts.trim().split(/[\s,]+/).map(Number);
+         const verts = [{ x: coords[0], y: coords[1], type: 'M' }];
+         for (let i = 2; i < coords.length; i += 2) {
+           verts.push({ x: coords[i], y: coords[i + 1], type: 'L' });
+         }
+         verts.push({ x: coords[0], y: coords[1], type: 'Z' });
+         shapes.push(buildShapeData('polygon', verts, style, composedTransform));
+         break;
+       }
+       case 'text': {
+         const x = parseFloat(element.getAttribute('x')) || 0;
+         const y = parseFloat(element.getAttribute('y')) || 0;
+         shapes.push({
+           type: 'text',
+           text: element.textContent,
+           x, y, style, transform: composedTransform,
+           id: null, className: null
+         });
+         break;
+       }
+       case 'g':
+       case 'svg': {
+         for (const child of element.children) {
+           parseSVGElement(child, shapes, composedTransform);
+         }
+         break;
+       }
+     }
+
+     const id = element.getAttribute('id');
+     const cls = element.getAttribute('class');
+     const last = shapes[shapes.length - 1];
+     if (last) {
+       if (id) last.id = id;
+       if (cls) last.className = cls;
+     }
+     return shapes;
+   }
 
   function drawShape(p, shape) {
     if (shape.transform) {
@@ -458,7 +470,7 @@ function p5SVGImport(p5, fn) {
   fn.getSVGShapes = function (svgElement) {
     const shapes = [];
     for (const child of svgElement.children) {
-      parseSVGElement(child, shapes);
+      parseSVGElement(child, shapes, [1, 0, 0, 1, 0, 0]);
     }
     return shapes;
   };

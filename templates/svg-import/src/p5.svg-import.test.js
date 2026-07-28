@@ -119,7 +119,7 @@ describe('getSVGShapes', () => {
     expect(shapes[0].type).toBe('polygon');
   });
 
-  it('parses a group element', () => {
+  it('parses a group element with children', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -171,6 +171,12 @@ describe('parseSVG', () => {
 });
 
 describe('drawSVG', () => {
+  let fn;
+
+  beforeEach(() => {
+    ({ fn } = setupImport());
+  });
+
   it('calls p5 drawing methods for a rect shape', () => {
     const p = createMockP5();
     const shapes = [{
@@ -274,7 +280,11 @@ describe('transform parsing', () => {
   it('parses rotate(90) correctly', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('width', '10');
+    rect.setAttribute('height', '10');
     g.setAttribute('transform', 'rotate(90)');
+    g.appendChild(rect);
     svg.appendChild(g);
     const shapes = fn.getSVGShapes(svg);
     expect(shapes[0].transform[0]).toBeCloseTo(0, 5);
@@ -286,7 +296,11 @@ describe('transform parsing', () => {
   it('parses rotate(90, 50, 50) with center point', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('width', '10');
+    rect.setAttribute('height', '10');
     g.setAttribute('transform', 'rotate(90, 50, 50)');
+    g.appendChild(rect);
     svg.appendChild(g);
     const shapes = fn.getSVGShapes(svg);
     expect(shapes[0].transform[0]).toBeCloseTo(0, 5);
@@ -296,7 +310,11 @@ describe('transform parsing', () => {
   it('parses translate()', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('width', '10');
+    rect.setAttribute('height', '10');
     g.setAttribute('transform', 'translate(10, 20)');
+    g.appendChild(rect);
     svg.appendChild(g);
     const shapes = fn.getSVGShapes(svg);
     expect(shapes[0].transform[4]).toBe(10);
@@ -306,7 +324,11 @@ describe('transform parsing', () => {
   it('parses scale()', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('width', '10');
+    rect.setAttribute('height', '10');
     g.setAttribute('transform', 'scale(2, 3)');
+    g.appendChild(rect);
     svg.appendChild(g);
     const shapes = fn.getSVGShapes(svg);
     expect(shapes[0].transform[0]).toBe(2);
@@ -324,6 +346,8 @@ describe('style parsing', () => {
   it('parses fill-opacity and stroke-opacity', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('width', '10');
+    rect.setAttribute('height', '10');
     rect.setAttribute('fill-opacity', '0.5');
     rect.setAttribute('stroke-opacity', '0.8');
     svg.appendChild(rect);
@@ -335,6 +359,8 @@ describe('style parsing', () => {
   it('converts fill=none to null', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('width', '10');
+    rect.setAttribute('height', '10');
     rect.setAttribute('fill', 'none');
     svg.appendChild(rect);
     const shapes = fn.getSVGShapes(svg);
@@ -344,6 +370,8 @@ describe('style parsing', () => {
   it('converts stroke=none to null', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('width', '10');
+    rect.setAttribute('height', '10');
     rect.setAttribute('stroke', 'none');
     svg.appendChild(rect);
     const shapes = fn.getSVGShapes(svg);
