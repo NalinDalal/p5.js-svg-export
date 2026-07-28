@@ -176,29 +176,30 @@ ctx.arc = function (x, y, radius, startAngle, endAngle, counterClockwise) {
       return original.ellipse(x, y, radiusX, radiusY, startAngle, endAngle, counterClockwise);
     };
 
-    ctx.rect = function (x, y, w, h, radii) {
-      if (ir && ir.recording) {
-        syncStyleFromP5();
-        const r = (v) => Math.round(v * 1000) / 1000;
+ctx.rect = function (x, y, w, h, radii) {
+       if (ir && ir.recording) {
+         syncStyleFromP5();
+         const r = (v) => Math.round(v * 1000) / 1000;
 
-        if (radii && (radii.tl || radii.br)) {
-          const rad = radii.tl || 0;
-          currentPath.push(`M ${r(x + rad)} ${r(y)}`);
-          currentPath.push(`h ${r(w - rad * 2)}`);
-          if (rad > 0) currentPath.push(`a ${r(rad)} ${r(rad)} 0 0 1 ${r(rad)} ${r(rad)}`);
-          currentPath.push(`v ${r(h - rad * 2)}`);
-          if (rad > 0) currentPath.push(`a ${r(rad)} ${r(rad)} 0 0 1 -${r(rad)} ${r(rad)}`);
-          currentPath.push(`h -${r(w - rad * 2)}`);
-          if (rad > 0) currentPath.push(`a ${r(rad)} ${r(rad)} 0 0 1 -${r(rad)} -${r(rad)}`);
-          currentPath.push(`v -${r(h - rad * 2)}`);
-          if (rad > 0) currentPath.push(`a ${r(rad)} ${r(rad)} 0 0 1 ${r(rad)} -${r(rad)}`);
-          currentPath.push('z');
-        } else {
-          currentPath.push(`M ${r(x)} ${r(y)} h ${r(w)} v ${r(h)} h -${r(w)} z`);
-        }
-      }
-      return original.rect(x, y, w, h, radii);
-    };
+         const normalized = normalizeRadii(radii);
+
+         if (normalized && (normalized.tl || normalized.tr || normalized.br || normalized.bl)) {
+           currentPath.push(`M ${r(x + normalized.tl)} ${r(y)}`);
+           currentPath.push(`h ${r(w - normalized.tl - normalized.tr)}`);
+           if (normalized.tr > 0) currentPath.push(`a ${r(normalized.tr)} ${r(normalized.tr)} 0 0 1 ${r(normalized.tr)} ${r(normalized.tr)}`);
+           currentPath.push(`v ${r(h - normalized.tr - normalized.br)}`);
+           if (normalized.br > 0) currentPath.push(`a ${r(normalized.br)} ${r(normalized.br)} 0 0 1 ${r(-normalized.br)} ${r(normalized.br)}`);
+           currentPath.push(`h -${r(w - normalized.br - normalized.bl)}`);
+           if (normalized.bl > 0) currentPath.push(`a ${r(normalized.bl)} ${r(normalized.bl)} 0 0 1 ${r(-normalized.bl)} ${r(-normalized.bl)}`);
+           currentPath.push(`v -${r(h - normalized.bl - normalized.tl)}`);
+           if (normalized.tl > 0) currentPath.push(`a ${r(normalized.tl)} ${r(normalized.tl)} 0 0 1 ${r(normalized.tl)} ${r(-normalized.tl)}`);
+           currentPath.push('z');
+         } else {
+           currentPath.push(`M ${r(x)} ${r(y)} h ${r(w)} v ${r(h)} h -${r(w)} z`);
+         }
+       }
+       return original.rect(x, y, w, h, radii);
+     };
 
     ctx.closePath = function () {
       if (ir && ir.recording) {
@@ -331,10 +332,11 @@ ctx.arc = function (x, y, radius, startAngle, endAngle, counterClockwise) {
     ir = createIRState();
   };
 
-  lifecycles.postdraw = function () {
-    currentPath = [];
-    syncStyleFromP5();
-  };
+lifecycles.postdraw = function () {
+     flushPath();
+     currentPath = [];
+     syncStyleFromP5();
+   };
 
   fn.saveSVG = function (filename = 'sketch.svg') {
     if (ir) {
