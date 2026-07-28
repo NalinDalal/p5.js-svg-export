@@ -49,11 +49,20 @@ function p5SVGImport(p5, fn) {
         const rad = (deg * Math.PI) / 180;
         const cosA = Math.cos(rad);
         const sinA = Math.sin(rad);
+        const cx = v[1] || 0;
+        const cy = v[2] || 0;
         const r = [...matrix];
         matrix[0] = cosA * r[0] + sinA * r[1];
         matrix[1] = -sinA * r[0] + cosA * r[1];
         matrix[2] = cosA * r[2] + sinA * r[3];
         matrix[3] = -sinA * r[2] + cosA * r[3];
+        if (cx !== 0 || cy !== 0) {
+          matrix[4] = cx - cosA * cx + sinA * cy + cosA * r[4] + sinA * r[5];
+          matrix[5] = cy - sinA * cx - cosA * cy + sinA * r[4] + cosA * r[5];
+        } else {
+          matrix[4] = cosA * r[4] + sinA * r[5];
+          matrix[5] = -sinA * r[4] + cosA * r[5];
+        }
       }
     }
     return matrix;
@@ -224,6 +233,8 @@ function p5SVGImport(p5, fn) {
     style.stroke = getAttr('stroke');
     style.strokeWidth = getAttr('stroke-width');
     style.opacity = getAttr('opacity');
+    style.fillOpacity = getAttr('fill-opacity');
+    style.strokeOpacity = getAttr('stroke-opacity');
     if (style.fill === 'none') style.fill = null;
     if (style.stroke === 'none') style.stroke = null;
     return style;
@@ -398,6 +409,8 @@ function p5SVGImport(p5, fn) {
     if (shape.style.stroke) p.stroke(shape.style.stroke);
     else p.noStroke();
     if (shape.style.strokeWidth) p.strokeWeight(parseFloat(shape.style.strokeWidth));
+    if (shape.style.fillOpacity) p.fillOpacity(parseFloat(shape.style.fillOpacity));
+    if (shape.style.strokeOpacity) p.strokeOpacity(parseFloat(shape.style.strokeOpacity));
 
     if (shape.type === 'text') {
       p.textSize(parseFloat(shape.style.fontSize) || 12);
