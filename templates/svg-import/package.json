@@ -16,7 +16,9 @@
   ],
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w"
+    "dev": "rollup -c -w",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "p5js",
@@ -33,6 +35,8 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.0.0",
     "@rollup/plugin-terser": "^1.0.0",
-    "rollup": "^4.0.0"
+    "jsdom": "^29.1.1",
+    "rollup": "^4.0.0",
+    "vitest": "^4.1.9"
   }
 }
