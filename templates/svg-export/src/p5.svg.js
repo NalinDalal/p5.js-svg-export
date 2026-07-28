@@ -9,7 +9,8 @@ import {
   createPathCmd,
   createTextCmd,
   createImageCmd,
-  commandsToSVG
+  commandsToSVG,
+  normalizeRadii
 } from './ir/types.js';
 
 function p5SVG(p5, fn, lifecycles) {
