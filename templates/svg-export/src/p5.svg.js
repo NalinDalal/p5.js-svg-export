@@ -121,27 +121,33 @@ function p5SVG(p5, fn, lifecycles) {
       return original.quadraticCurveTo(cpx, cpy, x, y);
     };
 
-    ctx.arc = function (x, y, radius, startAngle, endAngle, counterClockwise) {
-      if (ir && ir.recording) {
-        syncStyleFromP5();
-        const r = (v) => Math.round(v * 1000) / 1000;
+ctx.arc = function (x, y, radius, startAngle, endAngle, counterClockwise) {
+       if (ir && ir.recording) {
+         syncStyleFromP5();
+         const r = (v) => Math.round(v * 1000) / 1000;
 
-        const startX = x + radius * Math.cos(startAngle);
-        const startY = y + radius * Math.sin(startAngle);
-        const endX = x + radius * Math.cos(endAngle);
-        const endY = y + radius * Math.sin(endAngle);
+         let delta = endAngle - startAngle;
+         if (counterClockwise) {
+           while (delta < 0) delta += 2 * Math.PI;
+         }
 
-        let delta = endAngle - startAngle;
-        if (counterClockwise) {
-          while (delta < 0) delta += 2 * Math.PI;
-        }
+         const isFull = Math.abs(delta) >= 2 * Math.PI - 0.0001;
 
-        const largeArc = Math.abs(delta) > Math.PI ? 1 : 0;
-        const sweep = counterClockwise ? 0 : 1;
-        currentPath.push(`M ${r(startX)} ${r(startY)} A ${r(radius)} ${r(radius)} 0 ${largeArc} ${sweep} ${r(endX)} ${r(endY)}`);
-      }
-      return original.arc(x, y, radius, startAngle, endAngle, counterClockwise);
-    };
+         if (isFull) {
+           currentPath.push(`M ${r(x + radius)} ${r(y)} A ${r(radius)} ${r(radius)} 0 1 1 ${r(x + radius)} ${r(y - 0.001)}`);
+         } else {
+           const startX = x + radius * Math.cos(startAngle);
+           const startY = y + radius * Math.sin(startAngle);
+           const endX = x + radius * Math.cos(endAngle);
+           const endY = y + radius * Math.sin(endAngle);
+
+           const largeArc = Math.abs(delta) > Math.PI ? 1 : 0;
+           const sweep = counterClockwise ? 0 : 1;
+           currentPath.push(`M ${r(startX)} ${r(startY)} A ${r(radius)} ${r(radius)} 0 ${largeArc} ${sweep} ${r(endX)} ${r(endY)}`);
+         }
+       }
+       return original.arc(x, y, radius, startAngle, endAngle, counterClockwise);
+     };
 
     ctx.ellipse = function (x, y, radiusX, radiusY, startAngle, endAngle, counterClockwise) {
       if (ir && ir.recording) {
