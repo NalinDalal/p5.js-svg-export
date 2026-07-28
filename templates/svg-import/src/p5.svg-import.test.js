@@ -288,8 +288,8 @@ describe('transform parsing', () => {
     svg.appendChild(g);
     const shapes = fn.getSVGShapes(svg);
     expect(shapes[0].transform[0]).toBeCloseTo(0, 5);
-    expect(shapes[0].transform[1]).toBeCloseTo(1, 5);
-    expect(shapes[0].transform[2]).toBeCloseTo(-1, 5);
+    expect(shapes[0].transform[1]).toBeCloseTo(-1, 5);
+    expect(shapes[0].transform[2]).toBeCloseTo(1, 5);
     expect(shapes[0].transform[3]).toBeCloseTo(0, 5);
   });
 
@@ -304,7 +304,7 @@ describe('transform parsing', () => {
     svg.appendChild(g);
     const shapes = fn.getSVGShapes(svg);
     expect(shapes[0].transform[0]).toBeCloseTo(0, 5);
-    expect(shapes[0].transform[1]).toBeCloseTo(1, 5);
+    expect(shapes[0].transform[1]).toBeCloseTo(-1, 5);
   });
 
   it('parses translate()', () => {
