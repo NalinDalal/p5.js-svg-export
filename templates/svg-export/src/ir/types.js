@@ -233,15 +233,18 @@ export function colorToHex(c) {
     if (!c || c === 'none') return null;
     if (typeof c === 'string') {
         if (c.startsWith('rgba')) {
-            const m = c.match(/rgba\((\d+),(\d+),(\d+),([\d.]+)\)/);
+            const m = c.match(/rgba\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)/);
             if (m) {
                 const r = parseInt(m[1]);
                 const g = parseInt(m[2]);
                 const b = parseInt(m[3]);
-                const a = parseFloat(m[4]);
+                const a = m[4] !== undefined ? parseFloat(m[4]) : 1;
                 const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-                const aHex = Math.round(a * 255).toString(16).padStart(2, '0');
-                return `${hex}${aHex}`;
+                if (a < 1) {
+                    const aHex = Math.round(a * 255).toString(16).padStart(2, '0');
+                    return `${hex}${aHex}`;
+                }
+                return hex;
             }
         }
         if (c.startsWith('rgb')) {
@@ -259,15 +262,18 @@ export function colorToHex(c) {
         const s = c.toString();
         if (s.startsWith('#')) return s;
         if (s.startsWith('rgba')) {
-            const m = s.match(/rgba\((\d+),(\d+),(\d+),([\d.]+)\)/);
+            const m = s.match(/rgba\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)/);
             if (m) {
                 const r = parseInt(m[1]);
                 const g = parseInt(m[2]);
                 const b = parseInt(m[3]);
-                const a = parseFloat(m[4]);
+                const a = m[4] !== undefined ? parseFloat(m[4]) : 1;
                 const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-                const aHex = Math.round(a * 255).toString(16).padStart(2, '0');
-                return `${hex}${aHex}`;
+                if (a < 1) {
+                    const aHex = Math.round(a * 255).toString(16).padStart(2, '0');
+                    return `${hex}${aHex}`;
+                }
+                return hex;
             }
         }
         if (s.startsWith('rgb')) {

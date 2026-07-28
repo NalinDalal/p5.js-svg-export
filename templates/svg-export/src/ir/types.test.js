@@ -363,8 +363,8 @@ describe('colorToHex', () => {
     expect(colorToHex('rgba(255,0,0)')).toBe('#ff0000');
   });
 
-  it('does not parse plain rgb strings (only rgba)', () => {
-    expect(colorToHex('rgb(255,0,0)')).toBe('rgb(255,0,0)');
+  it('parses rgb strings to hex', () => {
+    expect(colorToHex('rgb(255,0,0)')).toBe('#ff0000');
   });
 
   it('parses p5 color objects via toString with hex', () => {
